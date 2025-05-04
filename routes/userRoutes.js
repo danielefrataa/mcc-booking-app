@@ -1,6 +1,6 @@
 import express from 'express';
 import { User, Kategori, SubSektor, Kota, Kecamatan } from '../models/index.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
