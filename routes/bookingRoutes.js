@@ -3,6 +3,7 @@ const router = express.Router();
 import { Op } from 'sequelize';
 import Booking from '../models/Booking.js';
 
+// POST endpoint for creating a booking
 router.post('/', async (req, res) => {
   try {
     // Ambil data dari body
@@ -70,6 +71,48 @@ router.post('/', async (req, res) => {
     });
 
     res.status(201).json(booking);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// GET endpoint for fetching bookings
+router.get('/', async (req, res) => {
+  try {
+    // Get query parameters for filtering (optional)
+    const { id_user, id_ruangan, tanggal_mulai, tanggal_selesai } = req.query;
+    
+    // Build where clause for filtering
+    const whereClause = {};
+    if (id_user) whereClause.id_user = id_user;
+    if (id_ruangan) whereClause.id_ruangan = id_ruangan;
+    if (tanggal_mulai) whereClause.tanggal_mulai = { [Op.gte]: new Date(tanggal_mulai) };
+    if (tanggal_selesai) whereClause.tanggal_selesai = { [Op.lte]: new Date(tanggal_selesai) };
+
+    // Get all bookings with optional filters
+    const bookings = await Booking.findAll({
+      where: whereClause,
+      order: [['tanggal_mulai', 'ASC']] // Order by start date ascending
+    });
+
+    res.status(200).json(bookings);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// GET endpoint for fetching a single booking by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const booking = await Booking.findByPk(req.params.id);
+    
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking tidak ditemukan' });
+    }
+
+    res.status(200).json(booking);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error', error: error.message });
